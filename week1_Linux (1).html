@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 1 — HPC Internship Lab · UP PGC Visayas</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --bg2: #0f1520;
+    --bg3: #141c2e;
+    --border: #1e2d48;
+    --accent: #00c8ff;
+    --accent2: #0078ff;
+    --accent3: #00ff9f;
+    --text: #c8d8f0;
+    --text-dim: #5a7090;
+    --text-bright: #e8f2ff;
+    --done-color: #2a3a50;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* Header */
+  .site-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    display: grid; place-items: center;
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -.5px;
+  }
+  .site-name { font-size: 13px; color: var(--text-dim); font-family: var(--mono); letter-spacing: .04em; }
+  .site-name span { color: var(--text); }
+
+  /* Hero */
+  .hero { margin-bottom: 48px; }
+  .week-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--accent); letter-spacing: .08em; text-transform: uppercase;
+    background: rgba(0,200,255,.08); border: 1px solid rgba(0,200,255,.2);
+    border-radius: 4px; padding: 4px 10px; margin-bottom: 16px;
+  }
+  .week-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 600; color: var(--text-bright);
+    line-height: 1.15; letter-spacing: -.02em;
+    margin-bottom: 12px;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .hero-sub { font-size: 15px; color: var(--text-dim); line-height: 1.7; max-width: 560px; }
+
+  /* Stats row */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 40px;
+  }
+  .stat {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 18px;
+    position: relative; overflow: hidden;
+  }
+  .stat::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+  .stat-val { font-family: var(--mono); font-size: 28px; font-weight: 600; color: var(--text-bright); line-height: 1; }
+  .stat-lbl { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+
+  /* Progress */
+  .progress-wrap { margin-bottom: 40px; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-label { font-family: var(--mono); font-size: 12px; color: var(--text-dim); letter-spacing: .04em; }
+  .progress-pct { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  .progress-track {
+    height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width .4s ease; width: 0%;
+  }
+
+  /* Modules */
+  .modules { display: flex; flex-direction: column; gap: 12px; }
+
+  .module {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .module:hover { border-color: rgba(0,200,255,.25); }
+  .module.open { border-color: rgba(0,200,255,.3); }
+
+  .module-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+  }
+  .module-header:hover { background: var(--bg3); }
+
+  .mod-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--accent2); min-width: 28px;
+    letter-spacing: .04em;
+  }
+  .mod-icon {
+    width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 16px;
+    background: rgba(0,120,255,.12); border: 1px solid rgba(0,120,255,.2);
+  }
+  .mod-info { flex: 1; min-width: 0; }
+  .mod-title { font-size: 14px; font-weight: 500; color: var(--text-bright); }
+  .mod-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; font-family: var(--mono); }
+  .mod-count {
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 8px; white-space: nowrap;
+  }
+  .mod-chevron {
+    width: 20px; height: 20px; display: grid; place-items: center;
+    color: var(--text-dim); transition: transform .2s; flex-shrink: 0;
+  }
+  .module.open .mod-chevron { transform: rotate(180deg); }
+
+  /* Tasks */
+  .module-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 0;
+  }
+  .module.open .module-body { display: block; }
+
+  .task {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(30,45,72,.7);
+    cursor: pointer; transition: background .12s;
+  }
+  .task:last-child { border-bottom: none; }
+  .task:hover { background: var(--bg3); }
+
+  .task-cb {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1.5px solid var(--border);
+    border-radius: 3px; margin-top: 1px;
+    display: grid; place-items: center;
+    transition: all .15s;
+  }
+  .task.done .task-cb {
+    background: var(--accent3);
+    border-color: var(--accent3);
+  }
+  .task.done .task-cb::after { content: '✓'; font-size: 10px; color: #000; font-weight: 700; }
+
+  .task-text {
+    font-size: 13px; color: var(--text); line-height: 1.6; flex: 1;
+  }
+  .task.done .task-text { text-decoration: line-through; color: var(--text-dim); }
+
+  code {
+    font-family: var(--mono); font-size: 12px;
+    background: rgba(0,200,255,.07);
+    border: 1px solid rgba(0,200,255,.15);
+    color: var(--accent);
+    padding: 1px 6px; border-radius: 3px;
+  }
+  .task.done code { opacity: .5; }
+
+  .task-step {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    color: var(--text-dim); min-width: 20px; margin-top: 3px;
+  }
+
+  /* Footer */
+  .page-footer {
+    margin-top: 60px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .footer-text { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+  .reset-btn {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--text-dim); background: transparent;
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 6px 14px; cursor: pointer; transition: all .15s;
+  }
+  .reset-btn:hover { border-color: rgba(0,200,255,.3); color: var(--accent); }
+
+  /* Print */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before { display: none; }
+    .module { border: 1px solid #ccc; break-inside: avoid; }
+    .module-body { display: block !important; }
+    code { background: #f0f0f0; color: #333; border-color: #ccc; }
+    .reset-btn { display: none; }
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 26px; }
+    .module-header { padding: 14px 16px; }
+    .task { padding: 10px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <div class="logo-mark">HPC</div>
+    <div>
+      <div class="site-name"><span>UP PGC Visayas</span> · Systems Administration Internship</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="week-pill">Week 1 of 4</div>
+    <h1>Linux &amp; <em>Environment</em><br>Setup</h1>
+    <p class="hero-sub">Hands-on lab modules covering Ubuntu Server 24.04 installation, network configuration, user management, file permissions, and SSH hardening — the foundation for all HPC operations.</p>
+  </section>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val" id="s-done">0</div>
+      <div class="stat-lbl">Tasks completed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="s-total">0</div>
+      <div class="stat-lbl">Total tasks</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="s-pct">0%</div>
+      <div class="stat-lbl">Progress</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">6</div>
+      <div class="stat-lbl">Modules</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">// overall_progress</span>
+      <span class="progress-pct" id="pct-text">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog"></div>
+    </div>
+  </div>
+
+  <div class="modules" id="modules">
+
+    <!-- MODULE 1 -->
+    <div class="module open" id="mod-1">
+      <div class="module-header" onclick="toggleMod('mod-1')">
+        <span class="mod-num">01</span>
+        <div class="mod-icon">💿</div>
+        <div class="mod-info">
+          <div class="mod-title">Ubuntu Server 24.04 Installation in VMware</div>
+          <div class="mod-meta">Day 1 · ~2 hours · VMware Workstation / ESXi</div>
+        </div>
+        <span class="mod-count" id="cnt-mod-1">0 / 8</span>
+        <div class="mod-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">01</span><span class="task-text">Download Ubuntu Server 24.04 LTS ISO from <code>ubuntu.com/download/server</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">02</span><span class="task-text">Create a new VM in VMware — allocate <code>40 GB</code> disk, <code>4 GB</code> RAM, <code>2 vCPUs</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">03</span><span class="task-text">Boot from ISO, select language <code>English</code> and keyboard layout</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">04</span><span class="task-text">Select installation type: <code>Ubuntu Server</code> (not minimized)</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">05</span><span class="task-text">Partition disk: use entire disk, enable <code>LVM</code> group</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">06</span><span class="task-text">Create initial admin user and set hostname (e.g. <code>intern01.hpc.local</code>)</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">07</span><span class="task-text">Enable <code>OpenSSH server</code> during installation setup</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">08</span><span class="task-text">Complete installation, reboot, and verify login via console</span></div>
+      </div>
+    </div>
+
+    <!-- MODULE 2 -->
+    <div class="module" id="mod-2">
+      <div class="module-header" onclick="toggleMod('mod-2')">
+        <span class="mod-num">02</span>
+        <div class="mod-icon">🌐</div>
+        <div class="mod-info">
+          <div class="mod-title">Configure Static IP Address</div>
+          <div class="mod-meta">Day 1 · ~45 mins · Netplan / systemd-networkd</div>
+        </div>
+        <span class="mod-count" id="cnt-mod-2">0 / 6</span>
+        <div class="mod-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">01</span><span class="task-text">Identify the network interface name: <code>ip a</code> or <code>ip link show</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">02</span><span class="task-text">Edit Netplan config file: <code>sudo nano /etc/netplan/00-installer-config.yaml</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">03</span><span class="task-text">Set <code>addresses</code>, <code>gateway4</code>, and <code>nameservers</code> entries in YAML format</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">04</span><span class="task-text">Apply Netplan changes: <code>sudo netplan apply</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">05</span><span class="task-text">Verify internet connectivity: <code>ping 8.8.8.8</code> and <code>ping google.com</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">06</span><span class="task-text">Inspect the routing table: <code>ip route show</code></span></div>
+      </div>
+    </div>
+
+    <!-- MODULE 3 -->
+    <div class="module" id="mod-3">
+      <div class="module-header" onclick="toggleMod('mod-3')">
+        <span class="mod-num">03</span>
+        <div class="mod-icon">📦</div>
+        <div class="mod-info">
+          <div class="mod-title">System Update & Basic Package Management</div>
+          <div class="mod-meta">Day 1 · ~30 mins · APT package manager</div>
+        </div>
+        <span class="mod-count" id="cnt-mod-3">0 / 6</span>
+        <div class="mod-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">01</span><span class="task-text">Update package index: <code>sudo apt update</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">02</span><span class="task-text">Upgrade all installed packages: <code>sudo apt upgrade -y</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">03</span><span class="task-text">Install essential tools: <code>sudo apt install htop net-tools curl wget vim tree -y</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">04</span><span class="task-text">Set system timezone to Manila: <code>sudo timedatectl set-timezone Asia/Manila</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">05</span><span class="task-text">Enable automatic security updates: <code>sudo apt install unattended-upgrades -y</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">06</span><span class="task-text">Verify system info: <code>uname -a</code> and <code>lsb_release -a</code></span></div>
+      </div>
+    </div>
+
+    <!-- MODULE 4 -->
+    <div class="module" id="mod-4">
+      <div class="module-header" onclick="toggleMod('mod-4')">
+        <span class="mod-num">04</span>
+        <div class="mod-icon">👥</div>
+        <div class="mod-info">
+          <div class="mod-title">Add Users and Groups</div>
+          <div class="mod-meta">Day 2 · ~1 hour · useradd / groupadd / usermod</div>
+        </div>
+        <span class="mod-count" id="cnt-mod-4">0 / 7</span>
+        <div class="mod-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">01</span><span class="task-text">Create a new intern group: <code>sudo groupadd hpcinterns</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">02</span><span class="task-text">Create 5 intern user accounts: <code>sudo useradd -m -g hpcinterns -s /bin/bash username</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">03</span><span class="task-text">Set passwords for each intern: <code>sudo passwd username</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">04</span><span class="task-text">Verify users exist in <code>/etc/passwd</code> and groups in <code>/etc/group</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">05</span><span class="task-text">Add a user to an additional group: <code>sudo usermod -aG sudo username</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">06</span><span class="task-text">List user's current groups: <code>groups username</code> and <code>id username</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">07</span><span class="task-text">Delete a test user and their home directory: <code>sudo userdel -r testuser</code></span></div>
+      </div>
+    </div>
+
+    <!-- MODULE 5 -->
+    <div class="module" id="mod-5">
+      <div class="module-header" onclick="toggleMod('mod-5')">
+        <span class="mod-num">05</span>
+        <div class="mod-icon">🔒</div>
+        <div class="mod-info">
+          <div class="mod-title">File Permissions & Ownership</div>
+          <div class="mod-meta">Day 2–3 · ~1.5 hours · chmod / chown / ACL / sticky bit</div>
+        </div>
+        <span class="mod-count" id="cnt-mod-5">0 / 6</span>
+        <div class="mod-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">01</span><span class="task-text">Set strict home directory permissions: <code>sudo chmod 700 /home/username</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">02</span><span class="task-text">Set correct ownership: <code>sudo chown username:hpcinterns /home/username</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">03</span><span class="task-text">Create a shared <code>/scratch</code> dir and apply sticky bit: <code>sudo chmod 1777 /scratch</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">04</span><span class="task-text">Test that another intern user cannot enter <code>/home/otherintern</code> — expected: <code>Permission denied</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">05</span><span class="task-text">Set a file ACL on a project folder: <code>sudo setfacl -m u:username:rx /projects</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">06</span><span class="task-text">Find and report world-writable directories: <code>find / -type d -perm -o+w 2>/dev/null</code></span></div>
+      </div>
+    </div>
+
+    <!-- MODULE 6 -->
+    <div class="module" id="mod-6">
+      <div class="module-header" onclick="toggleMod('mod-6')">
+        <span class="mod-num">06</span>
+        <div class="mod-icon">🔑</div>
+        <div class="mod-info">
+          <div class="mod-title">SSH Configuration & Key-Based Authentication</div>
+          <div class="mod-meta">Day 4–5 · ~1.5 hours · OpenSSH / sshd_config</div>
+        </div>
+        <span class="mod-count" id="cnt-mod-6">0 / 6</span>
+        <div class="mod-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">01</span><span class="task-text">Generate SSH key pair on your client machine: <code>ssh-keygen -t ed25519 -C "intern@pgcv"</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">02</span><span class="task-text">Copy public key to the server: <code>ssh-copy-id username@server-ip</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">03</span><span class="task-text">Test key-based login — confirm no password prompt appears</span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">04</span><span class="task-text">Edit <code>/etc/ssh/sshd_config</code>: set <code>PermitRootLogin no</code> and <code>PasswordAuthentication no</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">05</span><span class="task-text">Restrict SSH access to interns only: add <code>AllowGroups hpcinterns</code></span></div>
+        <div class="task" onclick="chk(this)"><div class="task-cb"></div><span class="task-step">06</span><span class="task-text">Restart SSH daemon and verify: <code>sudo systemctl restart sshd && sudo systemctl status sshd</code></span></div>
+      </div>
+    </div>
+
+  </div><!-- /modules -->
+
+  <footer class="page-footer">
+    <div class="footer-text">UP PGC Visayas · HPC Systems Administration Internship · Week 1 of 4</div>
+    <button class="reset-btn" onclick="resetAll()">Reset checklist</button>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  const MODS = ['mod-1','mod-2','mod-3','mod-4','mod-5','mod-6'];
+
+  function toggleMod(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+
+  function chk(row) {
+    row.classList.toggle('done');
+    const modEl = row.closest('.module');
+    updateModCount(modEl);
+    updateGlobal();
+  }
+
+  function updateModCount(modEl) {
+    const id = modEl.id;
+    const total = modEl.querySelectorAll('.task').length;
+    const done = modEl.querySelectorAll('.task.done').length;
+    const cnt = document.getElementById('cnt-' + id);
+    if (cnt) cnt.textContent = done + ' / ' + total;
+  }
+
+  function updateGlobal() {
+    const all = document.querySelectorAll('.task');
+    const done = document.querySelectorAll('.task.done');
+    const pct = all.length ? Math.round(done.length / all.length * 100) : 0;
+    document.getElementById('s-done').textContent = done.length;
+    document.getElementById('s-total').textContent = all.length;
+    document.getElementById('s-pct').textContent = pct + '%';
+    document.getElementById('pct-text').textContent = pct + '%';
+    document.getElementById('prog').style.width = pct + '%';
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.task.done').forEach(t => t.classList.remove('done'));
+    MODS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) updateModCount(el);
+    });
+    updateGlobal();
+  }
+
+  // Init counts
+  MODS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) updateModCount(el);
+  });
+  updateGlobal();
+
+  // Persist to localStorage
+  function save() {
+    const state = [];
+    document.querySelectorAll('.task').forEach((t, i) => {
+      state.push(t.classList.contains('done'));
+    });
+    try { localStorage.setItem('hpc_week1', JSON.stringify(state)); } catch(e){}
+  }
+
+  function load() {
+    try {
+      const state = JSON.parse(localStorage.getItem('hpc_week1') || '[]');
+      const tasks = document.querySelectorAll('.task');
+      state.forEach((done, i) => {
+        if (done && tasks[i]) {
+          tasks[i].classList.add('done');
+          updateModCount(tasks[i].closest('.module'));
+        }
+      });
+      updateGlobal();
+    } catch(e){}
+  }
+
+  document.querySelectorAll('.task').forEach(t => {
+    t.addEventListener('click', save);
+  });
+
+  load();
+</script>
+</body>
+</html>
